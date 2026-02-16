@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breast Cancer Prediction | MedAlert AI</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <span class="logo">🎗️</span>
+      <span class="brand-name">MedAlert AI</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="/diabetes">Diabetes</a>
+      <a href="/cancer" class="active">Breast Cancer</a>
+      <a href="/heart">Heart</a>
+      <a href="/kidney">Kidney</a>
+      <a href="/liver">Liver</a>
+    </nav>
+
+    <a href="{{ url_for('dashboard') }}" class="btn-primary">Dashboard</a>
+  </div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main class="page">
+  <div class="page-inner">
+
+    <section class="card">
+      <div class="card-header">
+        <h1>Breast Cancer Risk Prediction</h1>
+        <p class="section-help">
+          Enter tumor diagnostic measurements to classify the tumor as
+          benign or malignant using machine learning models.
+        </p>
+      </div>
+
+      <!-- ================= MANUAL ENTRY ================= -->
+      <form class="form-grid" method="POST" action="/predict">
+
+        <label class="form-field">
+          <span>Mean Radius</span>
+          <input type="number" step="0.01" name="radius_mean" required>
+        </label>
+
+        <label class="form-field">
+          <span>Mean Texture</span>
+          <input type="number" step="0.01" name="texture_mean" required>
+        </label>
+
+        <label class="form-field">
+          <span>Mean Perimeter</span>
+          <input type="number" step="0.01" name="perimeter_mean" required>
+        </label>
+
+        <label class="form-field">
+          <span>Mean Area</span>
+          <input type="number" step="0.01" name="area_mean" required>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            Predict Breast Cancer Risk
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+  </div>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  © 2025 MedAlert AI • Breast Cancer Prediction Module
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | MedAlert AI</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <span class="logo">🩺</span>
+      <span class="brand-name">MedAlert AI</span>
+    </div>
+
+    <a href="{{ url_for('home') }}" class="btn-secondary">
+      Back to Home
+    </a>
+  </div>
+</header>
+
+<!-- ================= LOGIN PAGE ================= -->
+<!-- ================= LOGIN PAGE ================= -->
+<main class="auth-page">
+
+  <!-- OUTER BOX -->
+  <section class="auth-wrapper">
+
+    <!-- INNER CARD -->
+    <section class="auth-card login-card">
+
+      <!-- HEADER -->
+      <div class="auth-header">
+        <h1>Welcome Back</h1>
+        <p class="section-help">
+          Login to access your health prediction dashboard
+        </p>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form method="POST" action="/login" class="auth-form">
+
+        <label class="form-field">
+          <span>Email Address</span>
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="you@example.com"
+          >
+        </label>
+<br>
+
+        <label class="form-field">
+          <span>Password</span>
+          <input
+            type="password"
+            name="password"
+            required
+            placeholder="••••••••"
+          >
+        </label>
+<br>
+        <button type="submit" class="btn-primary auth-btn">
+          Login
+        </button>
+
+        <p class="auth-footer-text">
+          Don’t have an account?
+          <a href="{{ url_for('signupPage') }}">signup</a>
+        </p>
+
+      </form>
+
+    </section>
+
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  © 2025 MedAlert AI • Secure Login
+</footer>
+
+</body>
+</html>

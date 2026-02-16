@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedAlert AI | Smart Health Risk Prediction</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <span class="logo">🩺</span>
+      <span class="brand-name">MedAlert AI</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#modules">Diseases</a>
+      <a href="#about">About</a>
+    </nav>
+
+    <a href="{{ url_for('loginPage') }}" class="btn-primary">Login</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-text">
+      <h1>
+        Early Disease Risk Detection<br>
+        <span>Powered by Machine Learning</span>
+      </h1>
+
+      <p>
+        MedAlert AI is an intelligent health risk prediction system that
+        analyzes clinical parameters using ensemble machine learning
+        techniques to identify early signs of major diseases.
+      </p>
+
+      <div class="hero-actions">
+        <a href="{{ url_for('loginPage') }}" class="btn-primary">
+          Start Health Assessment
+        </a>
+        <a href="#modules" class="btn-secondary">
+          View Disease Modules
+        </a>
+      </div>
+    </div>
+
+   <div class="preview-card">
+  <h3>Sample Risk Overview</h3>
+
+  <div class="risk-row">
+    <span>Diabetes</span>
+    <span class="badge badge-low">Low</span>
+  </div>
+
+  <div class="risk-row">
+    <span>Heart Disease</span>
+    <span class="badge badge-medium">Medium</span>
+  </div>
+
+  <div class="risk-row">
+    <span>Kidney Disease</span>
+    <span class="badge badge-high">High</span>
+  </div>
+
+  <div class="alert-box">
+    <strong>Health Alert</strong>
+    <p>
+      High kidney disease risk pattern detected.
+      This is not a diagnosis. Please consult a healthcare professional.
+    </p>
+  </div>
+</div>
+
+
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section id="features" class="section">
+  <h2>Features</h2>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Multi-Disease Prediction</h3>
+      <p>
+        A unified platform to assess risk for diabetes, heart disease,
+        kidney disease, liver disease, and breast cancer.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Ensemble Machine Learning</h3>
+      <p>
+        Combines Logistic Regression, Random Forest, and SVM models
+        to improve prediction accuracy and robustness.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Clear Health Alerts</h3>
+      <p>
+        Converts complex model outputs into understandable risk
+        levels with actionable guidance.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DISEASE MODULES (UPDATED) ================= -->
+<section id="modules" class="section light">
+  <h2>Disease Prediction Modules</h2>
+
+ <div class="grid">
+
+  <a href="{{ url_for('loginPage') }}" class="card module">
+    <div class="module-icon">🩸</div>
+    <div class="module-title">Diabetes Risk Assessment</div>
+  </a>
+
+  <a href="{{ url_for('loginPage') }}" class="card module">
+    <div class="module-icon">❤️</div>
+    <div class="module-title">Heart Disease Prediction</div>
+  </a>
+
+  <a href="{{ url_for('loginPage') }}" class="card module">
+    <div class="module-icon">🧪</div>
+    <div class="module-title">Kidney Disease Detection</div>
+  </a>
+
+  <a href="{{ url_for('loginPage') }}" class="card module">
+    <div class="module-icon">🧬</div>
+    <div class="module-title">Liver Disease Prediction</div>
+  </a>
+
+  <a href="{{ url_for('loginPage') }}" class="card module">
+    <div class="module-icon">🎗️</div>
+    <div class="module-title">Breast Cancer Screening</div>
+  </a>
+
+  <!-- FUTURE MODULE -->
+  <div class="card module future">
+    <div class="module-icon">➕</div>
+    <div class="module-title">More Diseases<br><small>(Coming Soon)</small></div>
+  </div>
+
+</div>
+
+  <p class="section-help" style="margin-top:16px;">
+    * Login is required to access prediction modules
+  </p>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="section">
+  <h2>About the System</h2>
+  <p class="section-help">
+    MedAlert AI is developed as an academic decision-support system
+    to assist in early disease risk detection using machine learning.
+    It does not replace professional medical diagnosis.
+  </p>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  © <span id="year"></span> MedAlert AI • Smart Health Risk Prediction Platform
+</footer>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

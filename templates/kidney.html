@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kidney Disease Prediction | MedAlert AI</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <span class="logo">🧪</span>
+      <span class="brand-name">MedAlert AI</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href="{{ url_for('home') }}">Home</a>
+      <a href="/diabetes">Diabetes</a>
+      <a href="/cancer">Breast Cancer</a>
+      <a href="/heart">Heart</a>
+      <a href="/kidney" class="active">Kidney</a>
+      <a href="/liver">Liver</a>
+    </nav>
+
+    <a href="{{ url_for('dashboard') }}" class="btn-primary">Dashboard</a>
+  </div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main class="page">
+  <div class="page-inner">
+
+    <section class="card">
+      <div class="card-header">
+        <h1>Kidney Disease Prediction</h1>
+        <p class="section-help">
+          Enter renal clinical parameters to assess the risk of chronic kidney
+          disease using machine learning models.
+        </p>
+      </div>
+
+      <!-- ================= MANUAL ENTRY ================= -->
+      <form class="form-grid" method="POST" action="/kidney/predict">
+
+        <label class="form-field">
+          <span>Blood Urea (mg/dL)</span>
+          <input type="number" name="blood_urea" required>
+        </label>
+
+        <label class="form-field">
+          <span>Serum Creatinine (mg/dL)</span>
+          <input type="number" step="0.1" name="serum_creatinine" required>
+        </label>
+
+        <label class="form-field">
+          <span>Hemoglobin (g/dL)</span>
+          <input type="number" step="0.1" name="hemoglobin" required>
+        </label>
+
+        <label class="form-field">
+          <span>Specific Gravity</span>
+          <input type="number" step="0.001" name="sg" required>
+        </label>
+
+        <label class="form-field">
+          <span>Albumin Level</span>
+          <input type="number" name="al" required>
+        </label>
+
+        <label class="form-field">
+          <span>Age (years)</span>
+          <input type="number" name="age" required>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            Predict Kidney Disease Risk
+          </button>
+        </div>
+
+      </form>
+
+    </section>
+  </div>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  © 2025 MedAlert AI • Kidney Disease Prediction Module
+</footer>
+
+</body>
+</html>

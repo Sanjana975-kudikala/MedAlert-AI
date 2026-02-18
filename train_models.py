@@ -32,48 +32,41 @@ print("✅ Diabetes model saved")
 # ==========================
 # 2. HEART DISEASE MODEL
 # ==========================
-# ==========================
-# 2. HEART DISEASE MODEL
-# ==========================
-# Example: retraining Heart Disease model
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-import pickle
-import pandas as pd
+print("Training Heart Disease Model...")
 
 # Load your dataset
-df = pd.read_csv("datasets/heart.csv")  # make sure it has all 15 columns
-X = df[[
+df_heart = pd.read_csv("datasets/heart.csv") 
+X_heart = df_heart[[
     "age", "systolic", "diastolic", "cholesterol", "hdl", "ldl",
     "triglycerides", "blood_sugar", "bmi", "hr",
     "sex", "family_history", "smoking", "diabetes", "exercise_cp"
 ]]
-y = df["target"]
+y_heart = df_heart["target"]
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+scaler_heart = StandardScaler()
+X_scaled_heart = scaler_heart.fit_transform(X_heart)
 
-model = LogisticRegression()
-model.fit(X_scaled, y)
+model_heart = LogisticRegression(max_iter=1000)
+model_heart.fit(X_scaled_heart, y_heart)
 
 # Save model + scaler
 with open("models/heart.pkl", "wb") as f:
-    pickle.dump((model, scaler), f)
+    pickle.dump((model_heart, scaler_heart), f)
 print("✅ heart model saved")
+
 
 # ==========================
 # 3. KIDNEY DISEASE MODEL
 # ==========================
-import pandas as pd
-import pickle
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
+# ==========================
+# 3. KIDNEY DISEASE MODEL (Updated)
+# ==========================
+print("Training Kidney Disease Model...")
 
-# Load dataset
-df = pd.read_csv("datasets/kidney.csv")
+df_kidney = pd.read_csv("datasets/kidney.csv")
 
-# Select ONLY fields used in your form
-FEATURES = [
+# Select ONLY fields used in your kidney.html form
+KIDNEY_FEATURES = [
     "blood_urea",
     "serum_creatinine",
     "hemoglobin",
@@ -82,33 +75,28 @@ FEATURES = [
     "age"
 ]
 
-TARGET = "classification"
+# Ensure the CSV has a target column. 
+# If your CSV uses a different name for the result, change 'classification' below.
+TARGET_KIDNEY = "classification" 
 
-# Keep only needed columns
-df = df[FEATURES + [TARGET]]
+if TARGET_KIDNEY in df_kidney.columns:
+    df_kidney = df_kidney[KIDNEY_FEATURES + [TARGET_KIDNEY]]
+    df_kidney[TARGET_KIDNEY] = df_kidney[TARGET_KIDNEY].map({"ckd": 1, "notckd": 0})
+    
+    X_kidney = df_kidney[KIDNEY_FEATURES]
+    y_kidney = df_kidney[TARGET_KIDNEY]
 
-# Convert target to binary
-df[TARGET] = df[TARGET].map({"ckd": 1, "notckd": 0})
+    scaler_kidney = StandardScaler()
+    X_scaled_kidney = scaler_kidney.fit_transform(X_kidney)
 
-# Split X / y
-X = df[FEATURES]
-y = df[TARGET]
+    model_kidney = LogisticRegression(max_iter=1000)
+    model_kidney.fit(X_scaled_kidney, y_kidney)
 
-# Scale
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Train model
-from sklearn.linear_model import LogisticRegression
-model = LogisticRegression(max_iter=1000)
-model.fit(X_scaled, y)
-
-# Save model + scaler
-with open("models/kidney.pkl", "wb") as f:
-    pickle.dump((model, scaler), f)
-
-print("✅ Kidney model trained successfully")
-
+    with open("models/kidney.pkl", "wb") as f:
+        pickle.dump((model_kidney, scaler_kidney), f)
+    print("✅ Kidney model trained successfully")
+else:
+    print(f"❌ Error: {TARGET_KIDNEY} column missing in kidney.csv. Skipping...")
 
 # ==========================
 # 4. LIVER DISEASE MODEL
@@ -118,41 +106,46 @@ print("Training Liver Disease Model...")
 liver = pd.read_csv("datasets/liver.csv")
 liver = liver.dropna()
 
-X = liver.drop("Dataset", axis=1)
-y = liver["Dataset"] - 1  # convert 1/2 → 0/1
+X_liver = liver.drop("Dataset", axis=1)
+y_liver = liver["Dataset"] - 1  # convert 1/2 → 0/1
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+scaler_liver = StandardScaler()
+X_scaled_liver = scaler_liver.fit_transform(X_liver)
 
-model = LogisticRegression(max_iter=1000)
-model.fit(X_scaled, y)
+model_liver = LogisticRegression(max_iter=1000)
+model_liver.fit(X_scaled_liver, y_liver)
 
 with open("models/liver.pkl", "wb") as f:
-    pickle.dump((model, scaler), f)
+    pickle.dump((model_liver, scaler_liver), f)
 
 print("✅ Liver disease model saved")
 
 
 # ==========================
-# 5. BREAST CANCER MODEL
+# 5. BREAST CANCER MODEL (Updated)
 # ==========================
 print("Training Breast Cancer Model...")
 
 from sklearn.datasets import load_breast_cancer
 
 data = load_breast_cancer()
-X = data.data
-y = data.target
+# Create a DataFrame to easily select specific features
+df_cancer = pd.DataFrame(data.data, columns=data.feature_names)
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# Select ONLY the 4 features that match your breast_cancer.html inputs
+CANCER_FEATURES = ['mean radius', 'mean texture', 'mean perimeter', 'mean area']
+X_cancer = df_cancer[CANCER_FEATURES]
+y_cancer = data.target
 
-model = LogisticRegression(max_iter=1000)
-model.fit(X_scaled, y)
+scaler_cancer = StandardScaler()
+X_scaled_cancer = scaler_cancer.fit_transform(X_cancer)
+
+model_cancer = LogisticRegression(max_iter=1000)
+model_cancer.fit(X_scaled_cancer, y_cancer)
 
 with open("models/breast_cancer.pkl", "wb") as f:
-    pickle.dump((model, scaler), f)
+    pickle.dump((model_cancer, scaler_cancer), f)
 
-print("✅ Breast cancer model saved")
+print("✅ Breast cancer model saved with 4 features")
 
 print("\n🎉 ALL MODELS TRAINED & SAVED SUCCESSFULLY!")

@@ -5,15 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Liver Disease Prediction | MedAlert AI</title>
 
-  <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Main CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 
-<!-- ================= NAVBAR ================= -->
 <header class="nav">
   <div class="nav-inner">
     <div class="brand">
@@ -34,7 +31,6 @@
   </div>
 </header>
 
-<!-- ================= MAIN ================= -->
 <main class="page">
   <div class="page-inner">
 
@@ -47,52 +43,54 @@
         </p>
       </div>
 
-      <!-- ================= MANUAL ENTRY ================= -->
       <form class="form-grid" method="POST" action="/liver/predict">
-
+        <label class="form-field">
+          <span>Age (years)</span>
+          <input type="number" name="age" required>
+        </label>
         <label class="form-field">
           <span>Total Bilirubin (mg/dL)</span>
           <input type="number" step="0.1" name="total_bilirubin" required>
         </label>
-
         <label class="form-field">
           <span>Direct Bilirubin (mg/dL)</span>
           <input type="number" step="0.1" name="direct_bilirubin" required>
         </label>
-
         <label class="form-field">
           <span>Alkaline Phosphatase (IU/L)</span>
           <input type="number" name="alkphos" required>
         </label>
-
         <label class="form-field">
           <span>SGPT (ALT) (IU/L)</span>
           <input type="number" name="sgpt" required>
         </label>
-
         <label class="form-field">
           <span>SGOT (AST) (IU/L)</span>
           <input type="number" name="sgot" required>
         </label>
-
         <label class="form-field">
           <span>Total Proteins (g/dL)</span>
           <input type="number" step="0.1" name="total_proteins" required>
         </label>
+        
+        <label class="form-field">
+          <span>Albumin (g/dL)</span>
+          <input type="number" step="0.1" name="albumin" required>
+        </label>
+        <label class="form-field">
+          <span>Albumin & Globulin Ratio</span>
+          <input type="number" step="0.01" name="ag_ratio" required>
+        </label>
 
         <div class="form-actions">
-          <button type="submit" class="btn-primary">
-            Predict Liver Disease Risk
-          </button>
+          <button type="submit" class="btn-primary">Predict Liver Disease Risk</button>
         </div>
-
       </form>
     </section>
 
   </div>
 </main>
 
-<!-- ================= FOOTER ================= -->
 <footer class="footer">
   © 2025 MedAlert AI • Liver Disease Prediction Module
 </footer>

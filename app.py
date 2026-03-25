@@ -13,6 +13,9 @@ import time
 from math import radians, cos, sin, asin, sqrt
 from dotenv import load_dotenv
 from groq import Groq
+import markdown  # Add this import at the top
+
+# Add this filter after app = Flask(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -313,12 +316,12 @@ def get_active_alerts():
 @app.route("/update_notified_time/<disease_name>", methods=["POST"])
 @login_required
 def update_notified_time(disease_name):
+    # This resets the timer so the pop-up waits for the interval again
     active_alerts_collection.update_one(
         {"user_id": session['user_id'], "disease_name": disease_name},
         {"$set": {"last_notified": datetime.utcnow()}}
     )
     return jsonify({"status": "Time updated"})
-
 @app.route("/hospitals_by_place")
 def hospitals_by_place():
     place = request.args.get("place")
@@ -348,6 +351,8 @@ def hospitals_by_place():
 @login_required
 def history():
     return render_template('history.html')
-
+@app.template_filter('markdown')
+def markdown_filter(text):
+    return markdown.markdown(text)
 if __name__ == "__main__": 
     app.run(debug=True)

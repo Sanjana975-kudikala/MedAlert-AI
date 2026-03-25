@@ -88,9 +88,8 @@ function displayHospitals(hospitals) {
   container.innerHTML = html;
 }
 
-// ========== Health Alert Pop-up System ==========
+// ========== Health Alert System (Test Mode: 1 Minute Interval) ==========
 
-// Advice Arrays for the Pop-up
 const lowRiskAdvice = [
     "Take care of your health! Remember to stay hydrated and eat balanced meals.",
     "Maintain a healthy lifestyle. Light walking for 20 minutes is highly recommended today.",
@@ -111,68 +110,68 @@ function checkAndNotify() {
                 const now = new Date();
                 const lastNotified = new Date(alert.last_notified);
                 const diffHrs = (now - lastNotified) / (1000 * 60 * 60);
+                
+                // TEST SETTING: 1 minute is 1/60 of an hour
+                const testInterval = 1/60; 
 
-                // --- TEMPORARY CHANGE FOR TESTING ---
-                // Change 'diffHrs >= alert.interval_hrs' to 'true'
-                if (true) { 
+                console.log(`Checking ${alert.disease_name}: Hours passed: ${diffHrs.toFixed(4)} / Required: ${testInterval.toFixed(4)}`);
+
+                if (diffHrs >= testInterval) {
                     showInPagePopUp(alert);
                 }
-                // ------------------------------------
             });
         })
         .catch(err => console.error("Error fetching active alerts:", err));
 }
+
 function showInPagePopUp(alert) {
     const modal = document.getElementById("healthAlertModal");
     const title = document.getElementById("alertTitle");
     const body = document.getElementById("alertBody");
     const visitedBtn = document.getElementById("visitedBtn");
 
-    if (!modal) return; // Guard if modal HTML is missing
+    if (!modal) return;
 
     title.innerText = `${alert.disease_name} - ${alert.level}`;
     
-    // Logic for Advice Text
     if (alert.level === "HIGH RISK") {
-        body.innerHTML = `<strong>URGENT:</strong> Please take care and <strong>visit a hospital as soon as possible</strong>. Your health is priority.`;
+        body.innerHTML = `🚨 <strong>URGENT:</strong> Please take care and <strong>visit a hospital as soon as possible</strong> for ${alert.disease_name}. Your health is priority.`;
     } else if (alert.level === "MEDIUM RISK") {
         const advice = medRiskAdvice[Math.floor(Math.random() * medRiskAdvice.length)];
-        body.innerText = advice;
+        body.innerHTML = `⚠️ <strong>Caution:</strong> ${advice} We suggest visiting a hospital for a cautionary checkup.`;
     } else {
         const advice = lowRiskAdvice[Math.floor(Math.random() * lowRiskAdvice.length)];
-        body.innerText = advice;
+        body.innerHTML = `✅ <strong>Health Tip:</strong> ${advice} Take care of your health!`;
     }
 
     modal.style.display = "block";
 
-    // Action: Stop Alert completely (Visited Hospital)
     visitedBtn.onclick = () => {
         fetch(`/stop_alert/${alert.disease_name}`, { method: 'POST' })
         .then(() => {
             modal.style.display = "none";
-            // Refresh dashboard banner if it exists
             if (typeof loadAlertBanner === "function") loadAlertBanner();
         });
     };
 }
 
-// Function for the "Remind me later" button
 function dismissPopUp() {
     const titleElement = document.getElementById("alertTitle");
     if (titleElement) {
         const diseaseName = titleElement.innerText.split(' - ')[0];
-        // Tell backend to update last_notified so the interval starts over
+        // Resets the timer in the DB so the 1-minute interval starts over
         fetch(`/update_notified_time/${diseaseName}`, { method: 'POST' })
         .then(() => {
             document.getElementById("healthAlertModal").style.display = "none";
+            console.log("Timer reset. Next pop-up in 1 minute.");
         });
     } else {
         document.getElementById("healthAlertModal").style.display = "none";
     }
 }
 
-// Check for alert intervals every 30 seconds
-setInterval(checkAndNotify, 30000);
+// Poll every 10 seconds to detect the 1-minute mark quickly
+setInterval(checkAndNotify, 10000);
 
 // ========== Auto scroll helper ==========
 function scrollToHospitals() {

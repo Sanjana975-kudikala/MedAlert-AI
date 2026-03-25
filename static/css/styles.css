@@ -755,15 +755,15 @@ tr:hover {
 }
 /* --- AI Recommendation Modal --- */
 .modal {
-    display: none; /* Hidden by default */
+    display: none; 
     position: fixed;
-    z-index: 1000;
+    z-index: 9999;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    backdrop-filter: blur(4px);
+    background-color: rgba(0,0,0,0.6); /* Darker overlay */
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
@@ -800,4 +800,54 @@ tr:hover {
     line-height: 1.6;
     color: #444;
     margin-top: 15px;
+}
+/* Ensure risk text in banner is black */
+.risk-row span {
+    color: #000000 !important;
+}
+
+/* Dynamic Banner Backgrounds */
+.banner-low {
+    background-color: #f0fdf4 !important; /* Soft Green */
+    border-left: 5px solid var(--low) !important;
+}
+
+.banner-medium {
+    background-color: #fffbeb !important; /* Soft Yellow/Amber */
+    border-left: 5px solid var(--medium) !important;
+}
+
+.banner-high {
+    background-color: #fff1f2 !important; /* Soft Red */
+    border-left: 5px solid var(--high) !important;
+}
+
+/* Update badge text colors for better contrast if needed */
+.badge-low { color: #ffffff; background: var(--low); }
+.badge-medium { color: #000000; background: var(--medium); }
+.badge-high { color: #ffffff; background: var(--high); }
+.ai-content ul {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+.ai-content li {
+    margin-bottom: 8px;
+}
+
+.ai-content strong {
+    color: var(--primary);
+}
+#modalBody ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+#modalBody li {
+    margin-bottom: 8px;
+}
+
+#modalBody strong {
+    color: var(--primary);
+    font-weight: 700;
 }

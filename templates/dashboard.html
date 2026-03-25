@@ -97,13 +97,29 @@ async function loadAlertBanner() {
         const alerts = await res.json();
         const container = document.getElementById('alert-banner');
         const list = document.getElementById('active-list');
+        const previewCard = container.querySelector('.preview-card');
         
         if (alerts && alerts.length > 0) {
             container.style.display = 'block';
+            
+            // Get the highest risk level to determine banner color
+            // (Assuming one alert for simplicity, or the first one)
+            const topAlert = alerts[0];
+            const riskKey = topAlert.level.toLowerCase().replace(' ', '-'); // "low-risk", "medium-risk", "high-risk"
+            
+            // Apply dynamic background classes
+            previewCard.className = 'preview-card'; // Reset
+            if (riskKey.includes('low')) previewCard.classList.add('banner-low');
+            else if (riskKey.includes('medium')) previewCard.classList.add('banner-medium');
+            else if (riskKey.includes('high')) previewCard.classList.add('banner-high');
+
             list.innerHTML = alerts.map(a => `
                 <div class="risk-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
-                    <span style="font-size: 0.95rem;">
-                        <strong>${a.disease_name}</strong>: <span class="badge ${a.level.toLowerCase().replace(' ', '-')}">${a.level}</span>
+                    <span style="font-size: 0.95rem; color: #000;">
+                        <strong>${a.disease_name}</strong>: 
+                        <span class="badge badge-${a.level.toLowerCase().split(' ')[0]}">
+                            ${a.level}
+                        </span>
                     </span>
                     <button class="view-btn" onclick="stopAlert('${a.disease_name}')" style="font-size: 0.8rem;">
                         I've visited Hospital
@@ -117,7 +133,6 @@ async function loadAlertBanner() {
         console.error("Error loading alert banner:", error);
     }
 }
-
 async function stopAlert(name) {
     if(confirm(`Confirm that you have taken action for ${name}? Reminders will stop.`)) {
         await fetch(`/stop_alert/${name}`, {method: 'POST'});

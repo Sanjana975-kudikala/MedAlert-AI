@@ -61,11 +61,12 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             fetchHistory();
 
-            // Modal Close Helper
             const modal = document.getElementById('recommendationModal');
             const closeBtn = document.querySelector('.close-btn');
             
@@ -92,7 +93,6 @@
                 data.forEach(record => {
                     const row = document.createElement('tr');
                     
-                    // Alert Logic: 1 = High Risk, 0 = Low Risk
                     const isHighRisk = record.prediction === 1;
                     const riskClass = isHighRisk ? 'risk-high' : 'risk-low';
                     const riskText = isHighRisk ? 'High Risk' : 'Low Risk';
@@ -128,11 +128,12 @@
             try {
                 const response = await fetch(`/get_recommendation/${recordId}`);
                 const data = await response.json();
-                modalBody.innerHTML = `<p>${data.recommendation}</p>`;
+                
+                // Convert markdown advice into formatted HTML
+                modalBody.innerHTML = marked.parse(data.recommendation);
             } catch (error) {
                 modalBody.innerHTML = "Unable to retrieve AI advice at this time.";
             }
         }
-    </script>
-</body>
+    </script> </body>
 </html>

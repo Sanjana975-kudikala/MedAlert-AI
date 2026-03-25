@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedAlert AI - Prediction History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="nav">
+        <div class="nav-inner">
+            <div class="brand">
+                <span class="logo">🩺</span>
+                <span class="brand-name">MedAlert AI</span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="section">
+        <header style="margin-bottom: 30px;">
+            <h1><i class="fas fa-history"></i> Prediction History</h1>
+            <p class="section-help">Review your previous health risk assessments and AI recommendations.</p>
+        </header>
+
+        <main class="history-table-container">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Disease Category</th>
+                        <th>Risk Level</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    </tbody>
+            </table>
+
+            <div id="noDataMessage" class="hidden" style="text-align: center; padding: 50px;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">📂</div>
+                <p>No prediction history found.</p>
+                <a href="{{ url_for('dashboard') }}" class="btn-primary" style="margin-top: 20px;">New Prediction</a>
+            </div>
+        </main>
+    </div>
+
+    <div id="recommendationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 style="color: var(--primary); margin-bottom: 15px;">
+                <i class="fas fa-robot"></i> AI Health Advice
+            </h2>
+            <div id="modalBody" style="font-size: 1rem; color: var(--text);">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchHistory();
+
+            // Modal Close Helper
+            const modal = document.getElementById('recommendationModal');
+            const closeBtn = document.querySelector('.close-btn');
+            
+            closeBtn.onclick = () => modal.style.display = "none";
+            window.onclick = (event) => {
+                if (event.target == modal) modal.style.display = "none";
+            }
+        });
+
+        async function fetchHistory() {
+            try {
+                const response = await fetch('/get_history');
+                const data = await response.json();
+                
+                const tableBody = document.getElementById('historyBody');
+                const noData = document.getElementById('noDataMessage');
+
+                if (!data || data.length === 0) {
+                    noData.style.display = "block";
+                    document.getElementById('historyTable').style.display = "none";
+                    return;
+                }
+
+                data.forEach(record => {
+                    const row = document.createElement('tr');
+                    
+                    // Alert Logic: 1 = High Risk, 0 = Low Risk
+                    const isHighRisk = record.prediction === 1;
+                    const riskClass = isHighRisk ? 'risk-high' : 'risk-low';
+                    const riskText = isHighRisk ? 'High Risk' : 'Low Risk';
+                    const riskIcon = isHighRisk ? '⚠️' : '✅';
+
+                    row.innerHTML = `
+                        <td>${new Date(record.timestamp).toLocaleString()}</td>
+                        <td><strong>${record.disease_name}</strong></td>
+                        <td>
+                            <span class="badge ${riskClass}">
+                                ${riskIcon} ${riskText}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="view-btn" onclick="showAdvice('${record._id}')">
+                                <i class="fas fa-magnifying-glass-chart"></i> View Advice
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching history:', error);
+            }
+        }
+
+        async function showAdvice(recordId) {
+            const modal = document.getElementById('recommendationModal');
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `<div class="loader">Loading AI analysis...</div>`;
+            modal.style.display = "block";
+
+            try {
+                const response = await fetch(`/get_recommendation/${recordId}`);
+                const data = await response.json();
+                modalBody.innerHTML = `<p>${data.recommendation}</p>`;
+            } catch (error) {
+                modalBody.innerHTML = "Unable to retrieve AI advice at this time.";
+            }
+        }
+    </script>
+</body>
+</html>

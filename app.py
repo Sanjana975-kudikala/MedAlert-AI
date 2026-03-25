@@ -12,7 +12,7 @@ import requests
 import time
 from math import radians, cos, sin, asin, sqrt
 from dotenv import load_dotenv
-from groq import Groq  # Import Groq library
+from groq import Groq
 
 # Load environment variables
 load_dotenv()
@@ -23,7 +23,6 @@ app.secret_key = os.getenv("SECRET_KEY")
 
 # ================= ENV VARIABLES =================
 MONGO_URI = os.getenv("MONGO_URI")
-# Add your GROQ_API_KEY to your .env file
 GROQ_API_KEY = os.getenv("GROQ_API_KEY") 
 
 if not MONGO_URI:
@@ -38,6 +37,8 @@ groq_client = Groq(api_key=GROQ_API_KEY)
 client = MongoClient(MONGO_URI)
 db = client["medalert"]
 users_collection = db["users"]
+history_collection = db["history"]
+active_alerts_collection = db["active_alerts"] 
 
 # ================= AUTH DECORATOR =================
 def login_required(f):
@@ -74,10 +75,9 @@ def detect_disease(form):
     if "total_bilirubin" in keys: return "Liver Disease"
     return None
 
-# ================= AI RECOMMENDATIONS (GROQ UPDATED) =================
+# ================= AI RECOMMENDATIONS =================
 def get_precautions_from_ai(disease, risk_level):
     try:
-        # Professional medical prompt
         prompt = (
             f"You are a professional medical assistant. A patient has been screened for {disease} "
             f"and the result is {risk_level}. Provide 4 brief, actionable, and medically sound bullet points "
@@ -85,7 +85,6 @@ def get_precautions_from_ai(disease, risk_level):
             f"Keep the response professional and concise."
         )
 
-        # Updated model to llama-3.1-8b-instant to fix decommissioned error
         chat_completion = groq_client.chat.completions.create(
             messages=[
                 {"role": "system", "content": "You are a helpful medical assistant providing evidence-based advice."},
@@ -95,14 +94,12 @@ def get_precautions_from_ai(disease, risk_level):
             temperature=0.5,
             max_tokens=300
         )
-        
         return chat_completion.choices[0].message.content.strip()
-
     except Exception as e:
         print(f"Groq API Error: {e}")
         return "⚠️ AI health recommendations are temporarily unavailable. Please consult a doctor."
+
 # ================= PREDICTION LOGIC =================
-# ================= PREDICTION LOGIC (UPDATED) =================
 def predict_risk(form):
     disease = detect_disease(form)
     bundle = MODELS.get(disease)
@@ -123,53 +120,35 @@ def predict_risk(form):
         "Kidney Disease": ["blood_urea", "serum_creatinine", "hemoglobin", "specific_gravity", "albumin", "age"]
     }
 
-    # ===== VALUE EXTRACTION (Fixed for 400 Errors) =====
     if disease == "Diabetes":
         bp = form["blood_pressure"]
         systolic = float(bp.split("/")[0])
         values = np.array([[float(form["fbg"]), float(form["hba1c"]), float(form["rbs"]), 
                            systolic, float(form["bmi"]), float(form["age"]), 
                            float(form["family_history"]), float(form["pregnancies"])]])
-                           
     elif disease == "Heart Disease":
         values = np.array([[float(form[f]) for f in feature_map["Heart Disease"]]])
-        
     elif disease == "Liver Disease":
-        # Using exact name attributes from liver.html
-        values = np.array([[
-            float(form["age"]),
-            float(form["total_bilirubin"]),
-            float(form["direct_bilirubin"]),
-            float(form["alkphos"]),
-            float(form["sgpt"]),
-            float(form["sgot"]),
-            float(form["total_proteins"]),
-            float(form["albumin"]),
-            float(form["ag_ratio"])
-        ]])
-        
+        values = np.array([[float(form["age"]), float(form["total_bilirubin"]), float(form["direct_bilirubin"]),
+                           float(form["alkphos"]), float(form["sgpt"]), float(form["sgot"]),
+                           float(form["total_proteins"]), float(form["albumin"]), float(form["ag_ratio"])]])
     elif disease == "Kidney Disease":
         values = np.array([[float(form[f]) for f in feature_map["Kidney Disease"]]])
-        
     elif disease == "Breast Cancer":
-        # Using exact name attributes from breast_cancer.html
-        values = np.array([[
-            float(form["radius_mean"]),
-            float(form["texture_mean"]),
-            float(form["perimeter_mean"]),
-            float(form["area_mean"])
-        ]])
+        values = np.array([[float(form["radius_mean"]), float(form["texture_mean"]),
+                           float(form["perimeter_mean"]), float(form["area_mean"])]])
     else:
         values = np.array([float(v) for v in form.values()]).reshape(1, -1)
 
-    # Convert to DataFrame with feature_map names to satisfy scaler requirements
     values_df = pd.DataFrame(values, columns=feature_map[disease])
     values_scaled = scaler.transform(values_df)
     
     probability = model.predict_proba(values_scaled)[0][1]
+    raw_prediction = model.predict(values_scaled)[0]
     level = "HIGH RISK" if probability >= 0.7 else "MEDIUM RISK" if probability >= 0.5 else "LOW RISK"
 
-    return disease, level, round(probability * 100, 2)
+    return disease, level, round(probability * 100, 2), int(raw_prediction)
+
 # ================= ALERT BUILD =================
 def build_alert(disease, level, probability):
     messages = {
@@ -246,13 +225,39 @@ def liverPage(): return render_template("liver.html")
 
 def handle_prediction(form):
     try:
-        disease, level, probability = predict_risk(form)
+        disease, level, probability, raw_pred = predict_risk(form)
+        ai_recommendation = get_precautions_from_ai(disease, level)
+        
+        if 'user_id' in session:
+            # SAVE TO HISTORY
+            history_entry = {
+                "user_id": session['user_id'],
+                "disease_name": disease,
+                "prediction": raw_pred,
+                "timestamp": datetime.utcnow(),
+                "recommendation": ai_recommendation
+            }
+            history_collection.insert_one(history_entry)
+
+            # TIERED ALERT LOGIC
+            intervals = {"HIGH RISK": 1, "MEDIUM RISK": 2, "LOW RISK": 3}
+            active_alerts_collection.update_one(
+                {"user_id": session['user_id'], "disease_name": disease},
+                {"$set": {
+                    "level": level,
+                    "interval_hrs": intervals.get(level, 3),
+                    "status": "ACTIVE",
+                    "last_notified": datetime.utcnow()
+                }},
+                upsert=True
+            )
+
         return render_template(
             "predict.html",
             disease=disease,
             alert=build_alert(disease, level, probability),
             result_text=f"{level} detected for {disease}",
-            precautions=get_precautions_from_ai(disease, level)
+            precautions=ai_recommendation
         )
     except Exception as e:
         return f"Error occurred: {str(e)}"
@@ -273,6 +278,47 @@ def liver_predict(): return handle_prediction(request.form)
 @login_required
 def diabetes_predict(): return handle_prediction(request.form)
 
+@app.route("/get_history")
+@login_required
+def get_history():
+    user_history = list(history_collection.find({"user_id": session['user_id']}).sort("timestamp", -1))
+    for record in user_history:
+        record['_id'] = str(record['_id'])
+    return jsonify(user_history)
+
+@app.route("/get_recommendation/<record_id>")
+@login_required
+def get_recommendation(record_id):
+    record = history_collection.find_one({"_id": ObjectId(record_id)})
+    if record:
+        return jsonify({"recommendation": record.get("recommendation", "No advice available.")})
+    return jsonify({"recommendation": "Record not found."}), 404
+
+@app.route("/stop_alert/<disease_name>", methods=["POST"])
+@login_required
+def stop_alert(disease_name):
+    active_alerts_collection.delete_one({
+        "user_id": session['user_id'], 
+        "disease_name": disease_name
+    })
+    return jsonify({"status": "Alert stopped"})
+
+@app.route("/get_active_alerts")
+@login_required
+def get_active_alerts():
+    alerts = list(active_alerts_collection.find({"user_id": session['user_id']}))
+    for a in alerts: a['_id'] = str(a['_id'])
+    return jsonify(alerts)
+
+@app.route("/update_notified_time/<disease_name>", methods=["POST"])
+@login_required
+def update_notified_time(disease_name):
+    active_alerts_collection.update_one(
+        {"user_id": session['user_id'], "disease_name": disease_name},
+        {"$set": {"last_notified": datetime.utcnow()}}
+    )
+    return jsonify({"status": "Time updated"})
+
 @app.route("/hospitals_by_place")
 def hospitals_by_place():
     place = request.args.get("place")
@@ -282,8 +328,26 @@ def hospitals_by_place():
     lat, lon = float(res[0]["lat"]), float(res[0]["lon"])
     query = f'[out:json];(node["amenity"="hospital"](around:15000,{lat},{lon}););out center tags;'
     hospital_res = requests.post("https://overpass-api.de/api/interpreter", data=query, timeout=10).json()
-    hospitals = [{"name": h.get("tags", {}).get("name", "Hospital"), "address": h.get("tags", {}).get("addr:full", ""), "distance": haversine(lat, lon, h.get("lat") or h.get("center", {}).get("lat"), h.get("lon") or h.get("center", {}).get("lon"))} for h in hospital_res.get("elements", [])]
+    
+    hospitals = [
+        {
+            "name": h.get("tags", {}).get("name", "Hospital"),
+            "address": h.get("tags", {}).get("addr:full", ""),
+            "distance": haversine(
+                lat, 
+                lon, 
+                h.get("lat") or h.get("center", {}).get("lat"), 
+                h.get("lon") or h.get("center", {}).get("lon")
+            )
+        } 
+        for h in hospital_res.get("elements", [])
+    ]
     return jsonify(sorted(hospitals, key=lambda x: x["distance"]))
+
+@app.route('/history')
+@login_required
+def history():
+    return render_template('history.html')
 
 if __name__ == "__main__": 
     app.run(debug=True)
